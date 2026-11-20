@@ -1,0 +1,1129 @@
+```html
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BERDIKARI VO — AI Affiliate Voice Over Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            studio: {
+              bg: '#0B0F17',
+              card: '#131A26',
+              panel: '#1A2333',
+              border: '#263248',
+              accent: '#10B981',
+              accentHover: '#059669',
+              amber: '#F59E0B',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0B0F17;
+      color: #F3F4F6;
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #263248;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374866;
+    }
+    /* Waveform animation */
+    @keyframes pulseBar {
+      0%, 100% { transform: scaleY(0.25); }
+      50% { transform: scaleY(1); }
+    }
+    .wave-bar {
+      transform-origin: center;
+      transition: transform 0.15s ease;
+    }
+    .playing .wave-bar {
+      animation: pulseBar 0.9s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <!-- Toast / Message Box (No alert() used) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Header & Branding -->
+  <header class="sticky top-0 z-30 bg-[#0B0F17]/90 backdrop-blur-md border-b border-studio-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <!-- Mic / Soundwave SVG Icon -->
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">BERDIKARI <span class="text-emerald-400">VO</span></h1>
+          </div>
+          <p class="text-[11px] text-gray-400 hidden sm:block">AI Affiliate Script & Voice Over Studio</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Gemini 3.1 Flash TTS
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN: Input Mode (Upload Gambar vs Narasi Siap Pakai) & Script Editor -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+
+        <!-- Input Mode Switcher Card -->
+        <section class="bg-studio-card border border-studio-border rounded-2xl p-4 sm:p-5 shadow-xl">
+          <!-- Mode Tabs -->
+          <div class="grid grid-cols-2 gap-2 p-1 bg-studio-bg rounded-xl border border-studio-border mb-5">
+            <button id="tab-image" type="button" onclick="switchMode('image')"
+              class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-emerald-500 text-slate-950 shadow-md">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <span>Upload Gambar Produk</span>
+            </button>
+            <button id="tab-script" type="button" onclick="switchMode('script')"
+              class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <span>Narasi Siap Pakai</span>
+            </button>
+          </div>
+
+          <!-- MODE 1: Upload Gambar Produk -->
+          <div id="panel-image" class="space-y-4">
+            <div id="drop-zone"
+              class="relative border-2 border-dashed border-studio-border hover:border-emerald-500/70 rounded-xl p-6 text-center transition-colors cursor-pointer bg-studio-bg/60 group"
+              onclick="document.getElementById('product-image-input').click()">
+              <input id="product-image-input" type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
+
+              <!-- Empty Dropzone State -->
+              <div id="upload-placeholder" class="flex flex-col items-center justify-center py-4">
+                <div class="w-12 h-12 rounded-full bg-studio-panel border border-studio-border flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold text-gray-200">Klik atau seret foto produk ke sini</p>
+                <p class="text-xs text-gray-400 mt-1">PNG, JPG, WEBP — AI akan menganalisa produk & membuatkan narasi affiliator</p>
+              </div>
+
+              <!-- Image Preview State -->
+              <div id="image-preview-wrapper" class="hidden flex-col items-center">
+                <div class="relative inline-block max-w-full">
+                  <img id="product-preview" src="" alt="Preview Produk" class="max-h-56 w-auto rounded-xl border border-studio-border object-contain mx-auto shadow-lg" />
+                  <button type="button" onclick="clearImage(event)" title="Hapus Gambar"
+                    class="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-md transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <p id="image-file-name" class="text-xs text-emerald-400 font-medium mt-2.5 truncate max-w-xs"></p>
+              </div>
+            </div>
+
+            <button id="btn-analyze-image" type="button" onclick="analyzeProductImage()"
+              class="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/15">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+              <span>Analisa Produk & Buat Narasi Affiliator</span>
+            </button>
+          </div>
+
+          <!-- MODE 2: Narasi Siap Pakai -->
+          <div id="panel-script" class="hidden space-y-4">
+            <div>
+              <label for="raw-script-input" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                Tempel / Ketik Narasi Affiliator Anda
+              </label>
+              <textarea id="raw-script-input" rows="5"
+                placeholder="Contoh: Kalian sering kesel nggak sih baju cepat kusut pas mau berangkat kerja? Padahal udah disetrika lama-lama. Nah kenalin setrika uap portable ini, panasnya cuma 15 detik langsung licin rapi! Mumpung lagi diskon 50% hari ini, buruan klik keranjang kuning di bawah sebelum kehabisan!"
+                class="w-full rounded-xl bg-studio-bg border border-studio-border focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 p-3.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition resize-y"></textarea>
+            </div>
+
+            <button id="btn-parse-script" type="button" onclick="parseReadyScript()"
+              class="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/15">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+              </svg>
+              <span>Pisahkan Struktur (Hook, Masalah, Storytelling, CTA)</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Script Breakdown & Kata Terkejut Section -->
+        <section class="bg-studio-card border border-studio-border rounded-2xl p-4 sm:p-5 shadow-xl space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-studio-border pb-3.5">
+            <div>
+              <h2 class="text-base font-bold text-white">Struktur Narasi Affiliator</h2>
+              <p class="text-xs text-gray-400">Edit tiap bagian naskah atau tambahkan kata kejutan di awal Hook</p>
+            </div>
+            <button type="button" onclick="clearAllSections()" class="text-xs text-gray-400 hover:text-rose-400 transition px-2.5 py-1 rounded-lg hover:bg-rose-500/10">
+              Reset Naskah
+            </button>
+          </div>
+
+          <!-- Kata Terkejut di Depan Hook -->
+          <div class="bg-studio-panel/80 border border-amber-500/30 rounded-xl p-3.5 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                </svg>
+                Tambahkan Kata Terkejut di Depan Hook:
+              </span>
+              <button id="btn-suggest-shock" type="button" onclick="suggestMoreShockWords()"
+                class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition flex items-center gap-1">
+                <span>✨ Saran Kata Kejutan Lainnya</span>
+              </button>
+            </div>
+
+            <!-- Preset & AI Suggested Shock Words Pills -->
+            <div id="shock-words-list" class="flex flex-wrap gap-2">
+              <button type="button" onclick="prependShockWord('Cihuyyy!!')" class="shock-pill px-3 py-1.5 rounded-lg text-xs font-bold bg-studio-bg hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-studio-border transition">
+                + Cihuyyy!!
+              </button>
+              <button type="button" onclick="prependShockWord('Waduduh,')" class="shock-pill px-3 py-1.5 rounded-lg text-xs font-bold bg-studio-bg hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-studio-border transition">
+                + Waduduh,
+              </button>
+              <button type="button" onclick="prependShockWord('Wah,')" class="shock-pill px-3 py-1.5 rounded-lg text-xs font-bold bg-studio-bg hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-studio-border transition">
+                + Wah,
+              </button>
+              <button type="button" onclick="prependShockWord('Gila sih!!')" class="shock-pill px-3 py-1.5 rounded-lg text-xs font-bold bg-studio-bg hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-studio-border transition">
+                + Gila sih!!
+              </button>
+              <button type="button" onclick="prependShockWord('Astaga!!')" class="shock-pill px-3 py-1.5 rounded-lg text-xs font-bold bg-studio-bg hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-studio-border transition">
+                + Astaga!!
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 Structured Fields -->
+          <div class="space-y-4">
+            <!-- 1. HOOK -->
+            <div class="bg-studio-bg border border-studio-border focus-within:border-amber-500/60 rounded-xl p-3.5 transition">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  1. Hook (Pancingan Awal)
+                </span>
+                <span class="text-[11px] text-gray-500">3 detik pertama</span>
+              </div>
+              <textarea id="field-hook" rows="2" oninput="updateFullPreview()"
+                placeholder="Kalimat pembuka yang bikin penonton berhenti scroll..."
+                class="w-full bg-transparent text-sm text-white placeholder-gray-600 outline-none resize-y"></textarea>
+            </div>
+
+            <!-- 2. MASALAH -->
+            <div class="bg-studio-bg border border-studio-border focus-within:border-rose-500/60 rounded-xl p-3.5 transition">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-400">
+                  <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                  2. Masalah (Pain Point)
+                </span>
+                <span class="text-[11px] text-gray-500">Relate dengan audiens</span>
+              </div>
+              <textarea id="field-masalah" rows="2" oninput="updateFullPreview()"
+                placeholder="Masalah yang sering dialami calon pembeli..."
+                class="w-full bg-transparent text-sm text-white placeholder-gray-600 outline-none resize-y"></textarea>
+            </div>
+
+            <!-- 3. STORYTELLING -->
+            <div class="bg-studio-bg border border-studio-border focus-within:border-sky-500/60 rounded-xl p-3.5 transition">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-400">
+                  <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                  3. Storytelling & Solusi Produk
+                </span>
+                <span class="text-[11px] text-gray-500">Cerita & keunggulan</span>
+              </div>
+              <textarea id="field-storytelling" rows="3" oninput="updateFullPreview()"
+                placeholder="Pengalaman pakai produk dan manfaat utamanya..."
+                class="w-full bg-transparent text-sm text-white placeholder-gray-600 outline-none resize-y"></textarea>
+            </div>
+
+            <!-- 4. CTA -->
+            <div class="bg-studio-bg border border-studio-border focus-within:border-emerald-500/60 rounded-xl p-3.5 transition">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  4. CTA (Call To Action)
+                </span>
+                <span class="text-[11px] text-gray-500">Ajakan checkout</span>
+              </div>
+              <textarea id="field-cta" rows="2" oninput="updateFullPreview()"
+                placeholder="Ajakan klik keranjang kuning / link bio sekarang..."
+                class="w-full bg-transparent text-sm text-white placeholder-gray-600 outline-none resize-y"></textarea>
+            </div>
+          </div>
+
+          <!-- Full Script Preview -->
+          <div class="bg-studio-panel/60 border border-studio-border rounded-xl p-3.5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-gray-300">Gabungan Naskah Siap Baca (Full Script)</span>
+              <button type="button" onclick="copyFullScript()" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                </svg>
+                Salin Naskah
+              </button>
+            </div>
+            <p id="full-script-preview" class="text-xs sm:text-sm text-gray-300 leading-relaxed italic">
+              Belum ada naskah. Upload gambar produk atau masukkan narasi siap pakai di atas.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN: Voice Over Settings & Gemini 3.1 Flash TTS Player -->
+      <div class="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-22">
+
+        <!-- Voice Configuration Panel -->
+        <section class="bg-studio-card border border-studio-border rounded-2xl p-4 sm:p-5 shadow-xl space-y-5">
+          <div class="flex items-center justify-between border-b border-studio-border pb-3.5">
+            <div>
+              <h2 class="text-base font-bold text-white">Pengaturan Suara Studio</h2>
+              <p class="text-xs text-gray-400">Atur karakter, gaya, tempo, dan aksen VO</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30">
+              Gemini 3.1 Flash TTS
+            </span>
+          </div>
+
+          <!-- 1. Pilihan Karakter Suara -->
+          <div>
+            <label for="voice-character" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              Pilihan Karakter Suara
+            </label>
+            <select id="voice-character"
+              class="w-full rounded-xl bg-studio-bg border border-studio-border focus:border-emerald-500 p-3 text-sm text-white outline-none transition">
+              <option value="Puck|Pria Energik & Antusias">Pria Energik & Antusias (Puck)</option>
+              <option value="Kore|Wanita Ceria & Ekspresif">Wanita Ceria & Ekspresif (Kore)</option>
+              <option value="Charon|Pria Berwibawa & Meyakinkan">Pria Berwibawa & Meyakinkan (Charon)</option>
+              <option value="Aoede|Wanita Ramah & Natural">Wanita Ramah & Natural (Aoede)</option>
+              <option value="Fenrir|Anak Muda Gaul & Hype">Anak Muda Gaul & Hype (Fenrir)</option>
+              <option value="Zephyr|Narator Profesional & Jernih">Narator Profesional & Jernih (Zephyr)</option>
+            </select>
+          </div>
+
+          <!-- 2. Style (Gaya Bicara) -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              Style / Gaya Bicara
+            </label>
+            <div id="style-options" class="grid grid-cols-2 gap-2">
+              <button type="button" data-value="Promo / Hype (Antusias, bersemangat, dan persuasif tinggi)"
+                onclick="selectOption('style', this)"
+                class="option-btn-style active-pill text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-emerald-500 bg-emerald-500/15 text-emerald-300 transition">
+                🔥 Promo / Hype
+              </button>
+              <button type="button" data-value="Storytelling / Emosional (Bercerita hangat dan menyentuh)"
+                onclick="selectOption('style', this)"
+                class="option-btn-style text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                📖 Storytelling
+              </button>
+              <button type="button" data-value="Soft Selling / Santai (Ngobrol akrab seperti teman)"
+                onclick="selectOption('style', this)"
+                class="option-btn-style text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                ☕ Soft Selling / Santai
+              </button>
+              <button type="button" data-value="Review Jujur / Informatif (Jelas, objektif, dan terpercaya)"
+                onclick="selectOption('style', this)"
+                class="option-btn-style text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                ✅ Review Jujur
+              </button>
+              <button type="button" data-value="Urgent / FOMO (Mendesak, takut kehabisan promo)"
+                onclick="selectOption('style', this)"
+                class="option-btn-style col-span-2 text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                ⚡ Urgent / FOMO (Promo Terbatas)
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Pace (Kecepatan Bicara) -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              Pace / Kecepatan Bicara
+            </label>
+            <div id="pace-options" class="grid grid-cols-2 gap-2">
+              <button type="button" data-value="Rapid Fire (Sangat cepat, padat, tanpa jeda panjang, khas TikTok/Reels)"
+                onclick="selectOption('pace', this)"
+                class="option-btn-pace active-pill text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-emerald-500 bg-emerald-500/15 text-emerald-300 transition">
+                🚀 Rapid Fire (Cepat)
+              </button>
+              <button type="button" data-value="Normal / Natural (Tempo percakapan sehari-hari yang jelas)"
+                onclick="selectOption('pace', this)"
+                class="option-btn-pace text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                🎙️ Normal / Natural
+              </button>
+              <button type="button" data-value="Dinamis (Cepat dan meledak di Hook, lalu stabil di isi)"
+                onclick="selectOption('pace', this)"
+                class="option-btn-pace text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                📈 Dinamis (Hook Cepat)
+              </button>
+              <button type="button" data-value="Santai / Lambat (Tenang, artikulasi jelas, tidak terburu-buru)"
+                onclick="selectOption('pace', this)"
+                class="option-btn-pace text-left px-3 py-2.5 rounded-xl text-xs font-semibold border border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500 transition">
+                🌊 Santai / Lambat
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Aksen (Accent / Logat) -->
+          <div>
+            <label for="voice-accent" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              Aksen / Logat Bahasa
+            </label>
+            <select id="voice-accent"
+              class="w-full rounded-xl bg-studio-bg border border-studio-border focus:border-emerald-500 p-3 text-sm text-white outline-none transition">
+              <option value="Netral (Bahasa Indonesia standar yang jelas dan bersih)">Netral (Indonesia Standar)</option>
+              <option value="Jaksel (Gaya anak muda Jakarta Selatan, kasual & kekinian)">Jaksel (Gaul Jakarta)</option>
+              <option value="Medok Jawa (Logat Jawa hangat, ramah, dan akrab)">Medok Jawa</option>
+              <option value="Sunda Ramah (Intonasi lembut dan ramah khas Sunda)">Sunda Ramah</option>
+              <option value="Betawi Santai (Logat Jakarta / Betawi ceplas-ceplos)">Betawi Santai</option>
+              <option value="Indonesia Timur (Intonasi tegas, ceria, dan penuh energi)">Indonesia Timur / Energik</option>
+            </select>
+          </div>
+
+          <!-- Generate TTS CTA Button -->
+          <button id="btn-generate-vo" type="button" onclick="generateVoiceOver()"
+            class="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-extrabold text-sm flex items-center justify-center gap-2.5 transition shadow-lg shadow-emerald-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+            </svg>
+            <span>Generate Voice Over (Gemini 3.1 Flash TTS)</span>
+          </button>
+        </section>
+
+        <!-- Studio Audio Player Card -->
+        <section id="audio-player-card" class="bg-studio-card border border-studio-border rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Output Audio Voice Over</span>
+            <span id="audio-status-badge" class="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-studio-panel text-gray-400 border border-studio-border">
+              Siap Generate
+            </span>
+          </div>
+
+          <!-- Waveform Visualizer -->
+          <div id="waveform-container" class="h-16 bg-studio-bg border border-studio-border rounded-xl px-4 flex items-center justify-between gap-1 overflow-hidden">
+            <!-- Bars generated via JS -->
+          </div>
+
+          <!-- Audio Controls -->
+          <div class="flex items-center gap-3">
+            <button id="btn-play-pause" type="button" onclick="togglePlayPause()" disabled
+              class="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-studio-panel disabled:text-gray-600 text-slate-950 flex items-center justify-center shrink-0 transition shadow-md">
+              <svg id="icon-play" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
+            </button>
+
+            <div class="flex-1 space-y-1">
+              <input id="audio-seek" type="range" min="0" max="100" value="0" disabled oninput="seekAudio(this.value)"
+                class="w-full accent-emerald-500 h-1.5 bg-studio-panel rounded-lg cursor-pointer disabled:cursor-not-allowed" />
+              <div class="flex justify-between text-[11px] text-gray-400 font-mono">
+                <span id="time-current">00:00</span>
+                <span id="time-duration">00:00</span>
+              </div>
+            </div>
+
+            <a id="btn-download-audio" href="#" download="BERDIKARI_VO.wav"
+              class="pointer-events-none opacity-40 px-3.5 py-2.5 rounded-xl bg-studio-panel hover:bg-studio-border border border-studio-border text-xs font-semibold text-white flex items-center gap-1.5 transition shrink-0">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <span>WAV</span>
+            </a>
+          </div>
+
+          <audio id="vo-audio-element" class="hidden"></audio>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ==========================================
+    // STATE & CONFIGURATION
+    // ==========================================
+    const apiKey = ""; // Runtime-provided API key
+    let currentMode = "image";
+    let uploadedImageBase64 = null;
+    let uploadedImageMime = "image/jpeg";
+
+    let selectedStyle = "Promo / Hype (Antusias, bersemangat, dan persuasif tinggi)";
+    let selectedPace = "Rapid Fire (Sangat cepat, padat, tanpa jeda panjang, khas TikTok/Reels)";
+    let currentAudioUrl = null;
+
+    // Initialize waveform visual bars
+    (function initWaveform() {
+      const container = document.getElementById("waveform-container");
+      const heights = [30, 55, 40, 80, 95, 60, 45, 85, 100, 70, 50, 90, 65, 40, 75, 95, 60, 35, 80, 90, 50, 70, 85, 45, 60, 75, 40, 55];
+      container.innerHTML = heights.map((h, i) => `
+        <div class="wave-bar flex-1 bg-emerald-500/40 rounded-full" style="height: ${h}%; animation-delay: ${(i * 0.06).toFixed(2)}s"></div>
+      `).join("");
+    })();
+
+    // ==========================================
+    // UI HELPERS (Toast, Tabs, Pills)
+    // ==========================================
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      const colors = {
+        success: "bg-emerald-950/95 border-emerald-500 text-emerald-200",
+        error: "bg-rose-950/95 border-rose-500 text-rose-200",
+        info: "bg-slate-900/95 border-teal-500 text-teal-200"
+      };
+      toast.className = `pointer-events-auto border px-4 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center justify-between gap-3 transition-all duration-300 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(8px)";
+        setTimeout(() => toast.remove(), 300);
+      }, 3800);
+    }
+
+    function switchMode(mode) {
+      currentMode = mode;
+      const tabImage = document.getElementById("tab-image");
+      const tabScript = document.getElementById("tab-script");
+      const panelImage = document.getElementById("panel-image");
+      const panelScript = document.getElementById("panel-script");
+
+      if (mode === "image") {
+        tabImage.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-emerald-500 text-slate-950 shadow-md";
+        tabScript.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white";
+        panelImage.classList.remove("hidden");
+        panelScript.classList.add("hidden");
+      } else {
+        tabScript.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-emerald-500 text-slate-950 shadow-md";
+        tabImage.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all text-gray-400 hover:text-white";
+        panelScript.classList.remove("hidden");
+        panelImage.classList.add("hidden");
+      }
+    }
+
+    function selectOption(group, btn) {
+      const value = btn.getAttribute("data-value");
+      if (group === "style") {
+        selectedStyle = value;
+        document.querySelectorAll(".option-btn-style").forEach(el => {
+          el.className = el.className
+            .replace("border-emerald-500 bg-emerald-500/15 text-emerald-300", "border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500");
+        });
+      } else if (group === "pace") {
+        selectedPace = value;
+        document.querySelectorAll(".option-btn-pace").forEach(el => {
+          el.className = el.className
+            .replace("border-emerald-500 bg-emerald-500/15 text-emerald-300", "border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500");
+        });
+      }
+      btn.className = btn.className
+        .replace("border-studio-border bg-studio-bg text-gray-300 hover:border-gray-500", "border-emerald-500 bg-emerald-500/15 text-emerald-300");
+    }
+
+    // ==========================================
+    // DRAG & DROP / IMAGE UPLOAD HANDLING
+    // ==========================================
+    const dropZone = document.getElementById("drop-zone");
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("border-emerald-400", "bg-emerald-500/5");
+    });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("border-emerald-400", "bg-emerald-500/5");
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("border-emerald-400", "bg-emerald-500/5");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        processImageFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) processImageFile(file);
+    }
+
+    function processImageFile(file) {
+      if (!file.type.startsWith("image/")) {
+        showToast("Harap pilih file gambar (JPG, PNG, WEBP).", "error");
+        return;
+      }
+      uploadedImageMime = file.type;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        uploadedImageBase64 = dataUrl.split(",")[1];
+        document.getElementById("product-preview").src = dataUrl;
+        document.getElementById("image-file-name").textContent = file.name;
+        document.getElementById("upload-placeholder").classList.add("hidden");
+        document.getElementById("image-preview-wrapper").classList.remove("hidden");
+        document.getElementById("image-preview-wrapper").classList.add("flex");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearImage(event) {
+      event.stopPropagation();
+      uploadedImageBase64 = null;
+      document.getElementById("product-image-input").value = "";
+      document.getElementById("product-preview").src = "";
+      document.getElementById("upload-placeholder").classList.remove("hidden");
+      document.getElementById("image-preview-wrapper").classList.add("hidden");
+      document.getElementById("image-preview-wrapper").classList.remove("flex");
+    }
+
+    // ==========================================
+    // SCRIPT SECTIONS & SHOCK WORDS LOGIC
+    // ==========================================
+    function populateScriptFields(data) {
+      document.getElementById("field-hook").value = (data.hook || "").trim();
+      document.getElementById("field-masalah").value = (data.masalah || "").trim();
+      document.getElementById("field-storytelling").value = (data.storytelling || "").trim();
+      document.getElementById("field-cta").value = (data.cta || "").trim();
+      updateFullPreview();
+    }
+
+    function getFullScriptText() {
+      const hook = document.getElementById("field-hook").value.trim();
+      const masalah = document.getElementById("field-masalah").value.trim();
+      const storytelling = document.getElementById("field-storytelling").value.trim();
+      const cta = document.getElementById("field-cta").value.trim();
+      return [hook, masalah, storytelling, cta].filter(Boolean).join(" ");
+    }
+
+    function updateFullPreview() {
+      const full = getFullScriptText();
+      const previewEl = document.getElementById("full-script-preview");
+      if (full) {
+        previewEl.textContent = `"${full}"`;
+        previewEl.classList.remove("italic", "text-gray-400");
+        previewEl.classList.add("text-gray-100");
+      } else {
+        previewEl.textContent = "Belum ada naskah. Upload gambar produk atau masukkan narasi siap pakai di atas.";
+        previewEl.classList.add("italic", "text-gray-400");
+      }
+    }
+
+    function prependShockWord(word) {
+      const hookInput = document.getElementById("field-hook");
+      const currentHook = hookInput.value.trim();
+      if (!currentHook) {
+        hookInput.value = `${word} `;
+      } else {
+        // Avoid duplicating exact same shock word at start
+        if (currentHook.toLowerCase().startsWith(word.toLowerCase())) {
+          showToast(`Kata "${word}" sudah ada di depan Hook.`, "info");
+          return;
+        }
+        hookInput.value = `${word} ${currentHook}`;
+      }
+      hookInput.focus();
+      updateFullPreview();
+      showToast(`Ditambahkan "${word}" di depan Hook!`, "success");
+    }
+
+    function clearAllSections() {
+      populateScriptFields({ hook: "", masalah: "", storytelling: "", cta: "" });
+      showToast("Naskah telah dikosongkan.", "info");
+    }
+
+    function copyFullScript() {
+      const text = getFullScriptText();
+      if (!text) {
+        showToast("Belum ada naskah untuk disalin.", "error");
+        return;
+      }
+      const tempArea = document.createElement("textarea");
+      tempArea.value = text;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempArea);
+      showToast("Naskah berhasil disalin ke clipboard!", "success");
+    }
+
+    // ==========================================
+    // GEMINI API HELPER (WITH EXPONENTIAL BACKOFF)
+    // ==========================================
+    async function fetchWithBackoff(url, options, maxRetries = 4) {
+      let delay = 1000;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, options);
+          if (!response.ok) {
+            if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
+              await new Promise(res => setTimeout(res, delay));
+              delay *= 2;
+              continue;
+            }
+            const errText = await response.text();
+            throw new Error(`API Error (${response.status}): ${errText}`);
+          }
+          return await response.json();
+        } catch (err) {
+          if (attempt === maxRetries) throw err;
+          await new Promise(res => setTimeout(res, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    // ==========================================
+    // 1. ANALYZE PRODUCT IMAGE (MULTIMODAL)
+    // ==========================================
+    async function analyzeProductImage() {
+      if (!uploadedImageBase64) {
+        showToast("Silakan upload gambar produk terlebih dahulu!", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btn-analyze-image");
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full"></span><span>Menganalisa Produk...</span>`;
+
+      try {
+        const prompt = `Analisa gambar produk ini secara detail untuk konten video affiliate TikTok / Shopee Video / Reels berbahasa Indonesia yang natural, persuasif, dan siap dibacakan sebagai Voice Over.
+Buatkan naskah affiliator yang terbagi tepat menjadi 4 bagian:
+1. hook: Kalimat pembuka yang menarik perhatian (3 detik pertama).
+2. masalah: Masalah sehari-hari yang relevan yang diselesaikan oleh produk ini.
+3. storytelling: Cerita singkat pengalaman memakai produk ini beserta fitur/keunggulan utamanya yang terlihat di gambar.
+4. cta: Ajakan bertindak (Call to Action) yang kuat untuk klik keranjang kuning / link pembelian sekarang.
+
+Gunakan bahasa Indonesia lisan yang enak dibaca voice over (hindari hashtag, emoji berlebihan, atau arahan kamera dalam kurung).`;
+
+        const payload = {
+          contents: [{
+            role: "user",
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: uploadedImageMime,
+                  data: uploadedImageBase64
+                }
+              }
+            ]
+          }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                hook: { type: "STRING" },
+                masalah: { type: "STRING" },
+                storytelling: { type: "STRING" },
+                cta: { type: "STRING" }
+              },
+              required: ["hook", "masalah", "storytelling", "cta"]
+            }
+          }
+        };
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const result = await fetchWithBackoff(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error("Respon AI kosong.");
+        const parsed = JSON.parse(text);
+        populateScriptFields(parsed);
+        showToast("Analisa produk berhasil! Naskah siap diedit atau langsung di-VO.", "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Gagal menganalisa gambar produk. Coba lagi.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // ==========================================
+    // 2. PARSE READY-TO-USE SCRIPT
+    // ==========================================
+    async function parseReadyScript() {
+      const rawText = document.getElementById("raw-script-input").value.trim();
+      if (!rawText) {
+        showToast("Masukkan narasi siap pakai terlebih dahulu!", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btn-parse-script");
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full"></span><span>Memisahkan Struktur Naskah...</span>`;
+
+      try {
+        const prompt = `Pisahkan naskah affiliate berikut ke dalam 4 bagian struktur naskah Voice Over:
+1. hook (kalimat pancingan awal)
+2. masalah (masalah atau keresahan audiens)
+3. storytelling (penjelasan produk, cerita, dan solusi/keunggulan)
+4. cta (ajakan membeli / klik keranjang)
+
+Pertahankan kata-kata asli user sebaik mungkin, rapikan sedikit jika perlu agar mengalir alami saat dibacakan, dan pastikan keempat bagian terisi proporsional dari teks berikut:
+"${rawText}"`;
+
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                hook: { type: "STRING" },
+                masalah: { type: "STRING" },
+                storytelling: { type: "STRING" },
+                cta: { type: "STRING" }
+              },
+              required: ["hook", "masalah", "storytelling", "cta"]
+            }
+          }
+        };
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const result = await fetchWithBackoff(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error("Respon AI kosong.");
+        const parsed = JSON.parse(text);
+        populateScriptFields(parsed);
+        showToast("Narasi berhasil dipisahkan ke Hook, Masalah, Storytelling & CTA!", "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Gagal memisahkan narasi. Silakan coba lagi.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // ==========================================
+    // 3. SUGGEST MORE SHOCK WORDS (KATA KEJUTAN)
+    // ==========================================
+    async function suggestMoreShockWords() {
+      const btn = document.getElementById("btn-suggest-shock");
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳ Mencari ide...</span>`;
+
+      try {
+        const currentHook = document.getElementById("field-hook").value.trim();
+        const prompt = `Berikan 6 kata atau frasa terkejut/seruan pembuka singkat khas affiliator Indonesia yang viral untuk ditaruh di paling depan kalimat Hook (contoh gaya: "Cihuyyy!!", "Waduduh,", "Wah,", "Seriusan?!", "Woy!!", "Fix no debat!!").
+${currentHook ? `Sesuaikan nuansanya dengan hook ini: "${currentHook}"` : ""}
+Kembalikan hanya array JSON berisi 6 string singkat (maksimal 3 kata per item, lengkap dengan tanda baca ekspresif seperti ! atau ,).`;
+
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            }
+          }
+        };
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const result = await fetchWithBackoff(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const suggestions = JSON.parse(text);
+        const listEl = document.getElementById("shock-words-list");
+
+        suggestions.forEach(word => {
+          const cleanWord = word.trim();
+          const exists = Array.from(listEl.querySelectorAll("button")).some(
+            b => b.textContent.replace("+ ", "").trim().toLowerCase() === cleanWord.toLowerCase()
+          );
+          if (!exists && cleanWord) {
+            const pill = document.createElement("button");
+            pill.type = "button";
+            pill.className = "shock-pill px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/40 transition";
+            pill.textContent = `+ ${cleanWord}`;
+            pill.onclick = () => prependShockWord(cleanWord);
+            listEl.appendChild(pill);
+          }
+        });
+
+        showToast("Saran kata kejutan baru ditambahkan!", "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Gagal memuat saran kata kejutan.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // ==========================================
+    // 4. GENERATE VOICE OVER (GEMINI 3.1 FLASH TTS)
+    // ==========================================
+    function base64ToArrayBuffer(base64) {
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    function pcmToWav(pcm16Samples, sampleRate) {
+      const numChannels = 1;
+      const bitsPerSample = 16;
+      const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+      const blockAlign = (numChannels * bitsPerSample) / 8;
+      const dataSize = pcm16Samples.length * 2;
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(buffer);
+
+      function writeString(offset, str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+      }
+
+      writeString(0, "RIFF");
+      view.setUint32(4, 36 + dataSize, true);
+      writeString(8, "WAVE");
+      writeString(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true); // PCM
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, byteRate, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, bitsPerSample, true);
+      writeString(36, "data");
+      view.setUint32(40, dataSize, true);
+
+      let offset = 44;
+      for (let i = 0; i < pcm16Samples.length; i++, offset += 2) {
+        view.setInt16(offset, pcm16Samples[i], true);
+      }
+      return new Blob([buffer], { type: "audio/wav" });
+    }
+
+    async function generateVoiceOver() {
+      const fullScript = getFullScriptText();
+      if (!fullScript) {
+        showToast("Naskah masih kosong! Isi Hook, Masalah, Storytelling, atau CTA dulu.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btn-generate-vo");
+      const statusBadge = document.getElementById("audio-status-badge");
+      const originalHtml = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full"></span><span>Generating Audio (Gemini 3.1 Flash TTS)...</span>`;
+      statusBadge.textContent = "Memproses Suara...";
+      statusBadge.className = "text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30";
+
+      const voiceRaw = document.getElementById("voice-character").value;
+      const [voiceName, voiceDesc] = voiceRaw.split("|");
+      const accent = document.getElementById("voice-accent").value;
+
+      const ttsPrompt = `Bacakan naskah voice over affiliate bahasa Indonesia berikut ini dengan penjiwaan penuh:
+- Karakter Suara: ${voiceDesc}
+- Gaya Bicara (Style): ${selectedStyle}
+- Kecepatan (Pace): ${selectedPace}
+- Aksen / Logat: ${accent}
+
+Pastikan intonasi pada bagian awal (Hook / kata kejutan) terdengar sangat menarik perhatian, mengalir natural di bagian masalah & storytelling, dan meyakinkan di bagian CTA. Bacakan HANYA teks naskah berikut tanpa menambah kata pengantar apa pun:
+
+"${fullScript}"`;
+
+      try {
+        const payload = {
+          contents: [{
+            parts: [{ text: ttsPrompt }]
+          }],
+          generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: voiceName }
+              }
+            }
+          }
+        };
+
+        const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+        const result = await fetchWithBackoff(ttsUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const part = result?.candidates?.[0]?.content?.parts?.[0];
+        const audioData = part?.inlineData?.data;
+        const mimeType = part?.inlineData?.mimeType || "audio/L16;rate=24000";
+
+        if (!audioData) {
+          throw new Error("Audio tidak ditemukan dalam respon API.");
+        }
+
+        const rateMatch = mimeType.match(/rate=(\d+)/);
+        const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+        const pcmBuffer = base64ToArrayBuffer(audioData);
+        const pcm16 = new Int16Array(pcmBuffer);
+        const wavBlob = pcmToWav(pcm16, sampleRate);
+
+        if (currentAudioUrl) {
+          URL.revokeObjectURL(currentAudioUrl);
+        }
+        currentAudioUrl = URL.createObjectURL(wavBlob);
+
+        setupAudioPlayer(currentAudioUrl);
+        statusBadge.textContent = "Audio Siap Diputar";
+        statusBadge.className = "text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+        showToast("Voice Over berhasil dibuat dengan Gemini 3.1 Flash TTS!", "success");
+      } catch (err) {
+        console.error(err);
+        statusBadge.textContent = "Gagal Generate";
+        statusBadge.className = "text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30";
+        showToast("Terjadi kendala saat membuat audio TTS. Silakan coba lagi.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // ==========================================
+    // 5. STUDIO AUDIO PLAYER CONTROLS
+    // ==========================================
+    const audioEl = document.getElementById("vo-audio-element");
+    const playPauseBtn = document.getElementById("btn-play-pause");
+    const seekSlider = document.getElementById("audio-seek");
+    const downloadBtn = document.getElementById("btn-download-audio");
+    const waveformContainer = document.getElementById("waveform-container");
+
+    function formatTime(sec) {
+      if (!isFinite(sec) || sec < 0) return "00:00";
+      const m = Math.floor(sec / 60).toString().padStart(2, "0");
+      const s = Math.floor(sec % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function setupAudioPlayer(url) {
+      audioEl.src = url;
+      audioEl.load();
+
+      playPauseBtn.disabled = false;
+      seekSlider.disabled = false;
+      seekSlider.value = 0;
+
+      downloadBtn.href = url;
+      downloadBtn.classList.remove("pointer-events-none", "opacity-40");
+
+      audioEl.onloadedmetadata = () => {
+        document.getElementById("time-duration").textContent = formatTime(audioEl.duration);
+        document.getElementById("time-current").textContent = "00:00";
+        // Auto-play on ready
+        audioEl.play().catch(() => {});
+      };
+
+      audioEl.onplay = () => {
+        document.getElementById("icon-play").classList.add("hidden");
+        document.getElementById("icon-pause").classList.remove("hidden");
+        waveformContainer.classList.add("playing");
+        waveformContainer.querySelectorAll(".wave-bar").forEach(b => b.classList.replace("bg-emerald-500/40", "bg-emerald-400"));
+      };
+
+      audioEl.onpause = () => {
+        document.getElementById("icon-play").classList.remove("hidden");
+        document.getElementById("icon-pause").classList.add("hidden");
+        waveformContainer.classList.remove("playing");
+        waveformContainer.querySelectorAll(".wave-bar").forEach(b => b.classList.replace("bg-emerald-400", "bg-emerald-500/40"));
+      };
+
+      audioEl.ontimeupdate = () => {
+        if (audioEl.duration) {
+          seekSlider.value = (audioEl.currentTime / audioEl.duration) * 100;
+          document.getElementById("time-current").textContent = formatTime(audioEl.currentTime);
+        }
+      };
+
+      audioEl.onended = () => {
+        seekSlider.value = 0;
+        document.getElementById("time-current").textContent = "00:00";
+      };
+    }
+
+    function togglePlayPause() {
+      if (!audioEl.src) return;
+      if (audioEl.paused) {
+        audioEl.play();
+      } else {
+        audioEl.pause();
+      }
+    }
+
+    function seekAudio(percent) {
+      if (audioEl.duration) {
+        audioEl.currentTime = (percent / 100) * audioEl.duration;
+      }
+    }
+  </script>
+</body>
+</html>
+```
