@@ -67,6 +67,23 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+<!-- Teks Bergerak (Running Text) -->
+<div class="w-full overflow-hidden bg-emerald-500/10 border-b border-emerald-500/20 py-2">
+  <div class="whitespace-nowrap animate-marquee text-xs font-medium text-emerald-400">
+    🔥 Selamat datang di BERDIKARI VO — Studio Voice Over Affiliator Otomatis • Upload foto produk atau tempel naskah jadi dalam hitungan detik! 🚀
+  </div>
+</div>
+
+<style>
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .animate-marquee {
+    display: inline-block;
+    animation: marquee 16s linear infinite;
+  }
+</style>
 
   <!-- Toast / Message Box (No alert() used) -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
