@@ -504,7 +504,15 @@
     // ==========================================
     // STATE & CONFIGURATION
     // ==========================================
-    const apiKey = ""; // Runtime-provided API key
+    let apiKey = localStorage.getItem('berdikari_gemini_key') || '';
+if (!apiKey) {
+  const inputKey = prompt('MASUKKAN API KEY ANDA DISINI:');
+  if (inputKey) {
+    apiKey = inputKey.trim();
+    localStorage.setItem('berdikari_gemini_key', apiKey);
+  }
+}
+    
     let currentMode = "image";
     let uploadedImageBase64 = null;
     let uploadedImageMime = "image/jpeg";
